@@ -1,10 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'mailing/base.html' %}
 
-</body>
-</html>
+{% block content %}
+<div class="p-5 mb-4 bg-white rounded-3 shadow-sm border">
+    <div class="container-fluid py-3">
+        <h1 class="display-5 fw-bold text-primary mb-3">Добро пожаловать в Сервис рассылок!</h1>
+        <p class="col-md-8 fs-4 text-muted">Управляйте вашими клиентами, создавайте сообщения и отслеживайте статистику отправлений в реальном времени.</p>
+    </div>
+</div>
+
+<h2 class="mb-4 fw-bold">Статистика сервиса</h2>
+
+<!-- Сетка из карточек для вывода счетчиков по ТЗ -->
+<div class="row g-4">
+    <!-- Счетчик 1: Всего рассылок -->
+    <div class="col-md-4">
+        <div class="card h-100 text-center border-0 shadow-sm">
+            <div class="card-body py-4">
+                <div class="display-4 fw-bold text-secondary mb-2">{{ total_mailings }}</div>
+                <h5 class="card-title text-muted">Всего рассылок</h5>
+            </div>
+        </div>
+    </div>
+
+    <!-- Счетчик 2: Активные рассылки -->
+    <div class="col-md-4">
+        <div class="card h-100 text-center border-0 shadow-sm bg-success text-white">
+            <div class="card-body py-4">
+                <div class="display-4 fw-bold mb-2">{{ active_mailings }}</div>
+                <h5 class="card-title opacity-75">Активные рассылки</h5>
+            </div>
+        </div>
+    </div>
+
+    <!-- Счетчик 3: Уникальные получатели -->
+    <div class="col-md-4">
+        <div class="card h-100 text-center border-0 shadow-sm">
+            <div class="card-body py-4">
+                <div class="display-4 fw-bold text-info mb-2">{{ unique_clients }}</div>
+                <h5 class="card-title text-muted">Уникальные получатели</h5>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

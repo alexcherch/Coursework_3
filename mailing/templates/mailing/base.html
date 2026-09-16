@@ -1,10 +1,46 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title|default:"Сервис рассылок" }}</title>
+    <!-- Подключаем локальный Bootstrap через тег static -->
+    <link href="{% static 'mailing/css/bootstrap.min.css' %}" rel="stylesheet">
 </head>
-<body>
+<body class="bg-light">
 
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'mailing:index' %}">📬 Сервис рассылок</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'mailing:index' %}">Главная</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент страницы -->
+    <main class="container">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Подвал сайта -->
+    <footer class="footer mt-5 py-3 bg-white text-center border-top">
+        <div class="container">
+            <span class="text-muted">© 2026 Сервис управления рассылками. Курсовая работа Skypro.</span>
+        </div>
+    </footer>
+
+    <!-- Подключаем локальный JS Bootstrap -->
+    <script src="{% static 'mailing/js/bootstrap.bundle.min.js' %}"></script>
 </body>
 </html>
