@@ -1,8 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from mailing.models import Mailing, Client, Message
 from mailing.forms import ClientForm, MessageForm, MailingForm
+from mailing.services import send_mailing
 
 
 def index(request):
@@ -123,3 +124,9 @@ class MailingDeleteView(DeleteView):
     """Удаление рассылки"""
     model = Mailing
     success_url = reverse_lazy('mailing:mailing_list')
+
+
+def toggle_mailing_send(request, pk):
+    """Контроллер для ручного запуска отправки рассылки из интерфейса"""
+    send_mailing(pk)
+    return redirect('mailing:mailing_detail', pk=pk)

@@ -1,8 +1,13 @@
 {% extends 'mailing/base.html' %}
 
 {% block content %}
-<div class="mb-4">
+<div class="mb-4 d-flex justify-content-between align-items-center">
     <a href="{% url 'mailing:mailing_list' %}" class="text-decoration-none text-muted">← Назад к списку рассылок</a>
+
+    <!-- Кнопка ручного запуска отправки рассылки -->
+    <a href="{% url 'mailing:mailing_toggle_send' object.id %}" class="btn btn-success fw-bold shadow-sm">
+        🚀 Запустить рассылку сейчас
+    </a>
 </div>
 
 <div class="row g-4">
@@ -81,6 +86,50 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- НОВЫЙ БЛОК: История попыток рассылки -->
+<div class="card border-0 shadow-sm mt-4 mb-5">
+    <div class="card-header bg-white border-0 pt-4 ps-4">
+        <h4 class="fw-bold text-dark mb-0">📊 Логи и история попыток отправки</h4>
+    </div>
+    <div class="card-body p-0">
+        <hr class="text-muted mx-4 my-2">
+
+        <!-- Используем связь _set для вывода всех связанных записей MailingAttempt -->
+        {% if object.mailingattempt_set.all %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Дата и время попытки</th>
+                            <th>Статус</th>
+                            <th class="pe-4">Ответ почтового сервера</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attempt in object.mailingattempt_set.all|dictsortreversed:"attempt_time" %}
+                            <tr>
+                                <td class="ps-4 text-muted">{{ attempt.attempt_time|date:"d.m.Y H:i:s" }}</td>
+                                <td>
+                                    {% if attempt.status == 'success' %}
+                                        <span class="badge bg-success">Успешно</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Не успешно</span>
+                                    {% endif %}
+                                </td>
+                                <td class="pe-4 text-secondary small">{{ attempt.server_response }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-4 text-center text-muted">
+                <p class="mb-0">Пока ни одной попытки отправки не зафиксировано. Нажмите кнопку «Запустить рассылку сейчас» выше.</p>
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

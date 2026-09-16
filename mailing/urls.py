@@ -4,7 +4,7 @@ from mailing.views import (
     index,
     ClientListView, ClientDetailView, ClientCreateView, ClientUpdateView, ClientDeleteView,
     MessageListView, MessageDetailView, MessageCreateView, MessageUpdateView, MessageDeleteView,
-    MailingListView, MailingDetailView, MailingCreateView, MailingUpdateView, MailingDeleteView
+    MailingListView, MailingDetailView, MailingCreateView, MailingUpdateView, MailingDeleteView, toggle_mailing_send
 )
 
 app_name = MailingConfig.name
@@ -33,4 +33,7 @@ urlpatterns = [
     path('mailings/create/', MailingCreateView.as_view(), name='mailing_create'),
     path('mailings/<int:pk>/update/', MailingUpdateView.as_view(), name='mailing_update'),
     path('mailings/<int:pk>/delete/', MailingDeleteView.as_view(), name='mailing_delete'),
+
+    # Маршрут для ручного запуска отправки рассылки
+    path('mailings/<int:pk>/send/', toggle_mailing_send, name='mailing_toggle_send'),
 ]

@@ -126,3 +126,12 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+# Настройки для тестирования отправки почты (вывод в консоль терминала)
+MAILERS = {
+    "default": {
+        "BACKEND": "django.core.mail.backends.console.EmailBackend",
+    }
+}
+
+DEFAULT_FROM_EMAIL = 'noreply@mailing-service.ru'
