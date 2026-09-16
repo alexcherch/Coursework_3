@@ -1,0 +1,40 @@
+{% extends 'mailing/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">Шаблоны писем (Сообщения)</h2>
+    <a href="{% url 'mailing:message_create' %}" class="btn btn-primary">+ Создать сообщение</a>
+</div>
+
+{% if object_list %}
+    <div class="row g-4">
+        {% for message in object_list %}
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <span class="badge bg-light text-muted align-self-start mb-2">ID: #{{ message.id }}</span>
+                        <h4 class="card-title fw-bold text-dark mb-3">{{ message.title }}</h4>
+                        <!-- Показываем только кусочек текста письма -->
+                        <p class="card-text text-muted flex-grow-1">
+                            {{ message.body|truncatechars:150 }}
+                        </p>
+                        <hr class="text-muted my-3">
+                        <div class="d-flex justify-content-end">
+                            <a href="{% url 'mailing:message_detail' message.id %}" class="btn btn-sm btn-outline-info me-1">Просмотр</a>
+                            <a href="{% url 'mailing:message_update' message.id %}" class="btn btn-sm btn-outline-secondary me-1">Редактировать</a>
+                            <a href="{% url 'mailing:message_delete' message.id %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-5 text-center text-muted">
+            <h5>Список сообщений пуст</h5>
+            <p class="mb-0">Создайте шаблон текста письма, чтобы использовать его в будущих рассылках.</p>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

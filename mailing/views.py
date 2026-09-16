@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from mailing.models import Mailing, Client
-from mailing.forms import ClientForm
+from mailing.models import Mailing, Client, Message
+from mailing.forms import ClientForm, MessageForm
 
 
 def index(request):
@@ -59,3 +59,35 @@ class ClientDeleteView(DeleteView):
     """Удаление клиента"""
     model = Client
     success_url = reverse_lazy('mailing:client_list')
+
+
+# --- СООБЩЕНИЯ (CRUD) ---
+
+class MessageListView(ListView):
+    """Просмотр списка всех сообщений"""
+    model = Message
+
+
+class MessageDetailView(DetailView):
+    """Просмотр детальной информации о сообщении"""
+    model = Message
+
+
+class MessageCreateView(CreateView):
+    """Создание нового сообщения"""
+    model = Message
+    form_class = MessageForm
+    success_url = reverse_lazy('mailing:message_list')
+
+
+class MessageUpdateView(UpdateView):
+    """Редактирование сообщения"""
+    model = Message
+    form_class = MessageForm
+    success_url = reverse_lazy('mailing:message_list')
+
+
+class MessageDeleteView(DeleteView):
+    """Удаление сообщения"""
+    model = Message
+    success_url = reverse_lazy('mailing:message_list')

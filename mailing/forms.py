@@ -1,5 +1,5 @@
 from django import forms
-from mailing.models import Client
+from mailing.models import Client, Message
 
 
 class StyleFormMixin:
@@ -19,4 +19,14 @@ class ClientForm(StyleFormMixin, forms.ModelForm):
         # Настраиваем виджет для комментария, чтобы он не занимал пол-экрана по высоте
         widgets = {
             'comment': forms.Textarea(attrs={'rows': 4}),
+        }
+
+
+class MessageForm(StyleFormMixin, forms.ModelForm):
+    """Форма для создания и редактирования сообщения"""
+    class Meta:
+        model = Message
+        fields = ('title', 'body')
+        widgets = {
+            'body': forms.Textarea(attrs={'rows': 5}),  # Делаем поле текста письма удобного размера
         }

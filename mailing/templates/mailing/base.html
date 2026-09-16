@@ -19,11 +19,19 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    <!-- Проверяем, если имя URL-пути 'index', добавляем класс active -->
                     <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'mailing:index' %}">Главная</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'index' %}active fw-bold text-white{% endif %}" href="{% url 'mailing:index' %}">Главная</a>
                     </li>
+
+                    <!-- Проверяем, начинается ли имя URL-пути с 'client' -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'mailing:client_list' %}">Клиенты</a>
+                        <a class="nav-link {% if 'client' in request.resolver_match.url_name %}active fw-bold text-white{% endif %}" href="{% url 'mailing:client_list' %}">Клиенты</a>
+                    </li>
+
+                    <!-- Проверяем, начинается ли имя URL-пути с 'message' -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'message' in request.resolver_match.url_name %}active fw-bold text-white{% endif %}" href="{% url 'mailing:message_list' %}">Сообщения</a>
                     </li>
                 </ul>
             </div>
