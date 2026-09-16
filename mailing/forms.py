@@ -1,5 +1,5 @@
 from django import forms
-from mailing.models import Client, Message
+from mailing.models import Client, Message, Mailing
 
 
 class StyleFormMixin:
@@ -29,4 +29,20 @@ class MessageForm(StyleFormMixin, forms.ModelForm):
         fields = ('title', 'body')
         widgets = {
             'body': forms.Textarea(attrs={'rows': 5}),  # Делаем поле текста письма удобного размера
+        }
+
+
+class MailingForm(StyleFormMixin, forms.ModelForm):
+    """Форма для создания и редактирования рассылки"""
+
+    class Meta:
+        model = Mailing
+        fields = ('start_time', 'end_time', 'status', 'message', 'clients')
+
+        widgets = {
+            # Настраиваем удобный календарь для выбора даты и времени
+            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            # Делаем поле выбора клиентов списком с возможностью множественного выбора
+            'clients': forms.SelectMultiple(attrs={'style': 'height: 150px;'}),
         }

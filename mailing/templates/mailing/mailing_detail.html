@@ -1,0 +1,86 @@
+{% extends 'mailing/base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'mailing:mailing_list' %}" class="text-decoration-none text-muted">← Назад к списку рассылок</a>
+</div>
+
+<div class="row g-4">
+    <!-- Основная карточка с параметрами -->
+    <div class="col-md-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 pt-4 ps-4">
+                <span class="badge bg-secondary mb-2">Рассылка #{{ object.id }}</span>
+                <h3 class="card-title fw-bold text-dark mb-0">Параметры отправки</h3>
+            </div>
+            <div class="card-body ps-4 pe-4">
+                <hr class="text-muted my-3">
+
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <label class="text-muted small text-uppercase fw-bold mb-1">Дата старта</label>
+                        <p class="fs-5 text-dark mb-0">{{ object.start_time|date:"d.m.Y H:i" }}</p>
+                    </div>
+                    <div class="col-6">
+                        <label class="text-muted small text-uppercase fw-bold mb-1">Дата завершения</label>
+                        <p class="fs-5 text-dark mb-0">{{ object.end_time|date:"d.m.Y H:i" }}</p>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="text-muted small text-uppercase fw-bold mb-1">Текущий статус</label>
+                    <div>
+                        {% if object.status == 'created' %}
+                            <span class="badge bg-secondary p-2 fs-6">Создана (еще не отправлялась)</span>
+                        {% elif object.status == 'started' %}
+                            <span class="badge bg-success p-2 fs-6">Запущена / Активна</span>
+                        {% elif object.status == 'completed' %}
+                            <span class="badge bg-danger p-2 fs-6">Завершена</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="text-muted small text-uppercase fw-bold mb-1">Привязанное сообщение</label>
+                    <div class="border rounded p-3 bg-light">
+                        <h5 class="fw-bold">{{ object.message.title }}</h5>
+                        <p class="text-muted mb-0 small">{{ object.message.body|truncatechars:100 }}</p>
+                        <a href="{% url 'mailing:message_detail' object.message.id %}" class="btn btn-sm btn-link p-0 mt-2 text-decoration-none">Перейти к сообщению →</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0 pb-4 ps-4 pe-4 d-flex justify-content-end">
+                <a href="{% url 'mailing:mailing_update' object.id %}" class="btn btn-outline-secondary me-2">Редактировать</a>
+                <a href="{% url 'mailing:mailing_delete' object.id %}" class="btn btn-danger">Удалить</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Боковая карточка со списком получателей (Many-to-Many) -->
+    <div class="col-md-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 pt-4 ps-4">
+                <h4 class="fw-bold text-dark mb-0">Получатели ({{ object.clients.count }})</h4>
+            </div>
+            <div class="card-body ps-4 pe-4">
+                <hr class="text-muted my-3">
+                <div style="max-height: 350px; overflow-y: auto;">
+                    <ul class="list-group list-group-flush">
+                        {% for client in object.clients.all %}
+                            <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-bold text-dark small">{{ client.full_name }}</div>
+                                    <div class="text-muted x-small">{{ client.email }}</div>
+                                </div>
+                                <a href="{% url 'mailing:client_detail' client.id %}" class="btn btn-sm btn-light">🔍</a>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted text-center py-4">К этой рассылке еще не привязано ни одного клиента.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

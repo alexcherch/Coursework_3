@@ -33,6 +33,9 @@
                     <li class="nav-item">
                         <a class="nav-link {% if 'message' in request.resolver_match.url_name %}active fw-bold text-white{% endif %}" href="{% url 'mailing:message_list' %}">Сообщения</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'mailing' in request.resolver_match.url_name %}active fw-bold text-white{% endif %}" href="{% url 'mailing:mailing_list' %}">Рассылки</a>
+                    </li>
                 </ul>
             </div>
         </div>
