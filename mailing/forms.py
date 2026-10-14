@@ -1,34 +1,38 @@
 from django import forms
-from mailing.models import Client, Message, Mailing
+
+from mailing.models import Client, Mailing, Message
 
 
 class StyleFormMixin:
     """Миксин для автоматического добавления стилей Bootstrap к полям формы"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
             # Добавляем класс Bootstrap для всех полей ввода
-            field.widget.attrs['class'] = 'form-control'
+            field.widget.attrs["class"] = "form-control"
 
 
 class ClientForm(StyleFormMixin, forms.ModelForm):
     """Форма для создания и редактирования клиента"""
+
     class Meta:
         model = Client
-        fields = ('full_name', 'email', 'comment')
+        fields = ("full_name", "email", "comment")
         # Настраиваем виджет для комментария, чтобы он не занимал пол-экрана по высоте
         widgets = {
-            'comment': forms.Textarea(attrs={'rows': 4}),
+            "comment": forms.Textarea(attrs={"rows": 4}),
         }
 
 
 class MessageForm(StyleFormMixin, forms.ModelForm):
     """Форма для создания и редактирования сообщения"""
+
     class Meta:
         model = Message
-        fields = ('title', 'body')
+        fields = ("title", "body")
         widgets = {
-            'body': forms.Textarea(attrs={'rows': 5}),  # Делаем поле текста письма удобного размера
+            "body": forms.Textarea(attrs={"rows": 5}),  # Делаем поле текста письма удобного размера
         }
 
 
@@ -37,12 +41,10 @@ class MailingForm(StyleFormMixin, forms.ModelForm):
 
     class Meta:
         model = Mailing
-        fields = ('start_time', 'end_time', 'status', 'message', 'clients')
+        fields = ("start_time", "end_time", "message", "recipients")
 
         widgets = {
-            # Настраиваем удобный календарь для выбора даты и времени
-            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            # Делаем поле выбора клиентов списком с возможностью множественного выбора
-            'clients': forms.SelectMultiple(attrs={'style': 'height: 150px;'}),
+            "start_time": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            "end_time": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            "recipients": forms.SelectMultiple(attrs={"style": "height: 150px;"}),
         }
