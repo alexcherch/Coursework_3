@@ -7,6 +7,7 @@ from mailing.views import (
     ClientDetailView,
     ClientListView,
     ClientUpdateView,
+    DisableMailingView,
     MailingCreateView,
     MailingDeleteView,
     MailingDetailView,
@@ -17,6 +18,8 @@ from mailing.views import (
     MessageDetailView,
     MessageListView,
     MessageUpdateView,
+    ToggleUserActiveView,
+    UserListView,
     index,
     toggle_mailing_send,
 )
@@ -46,4 +49,8 @@ urlpatterns = [
     path("mailings/<int:pk>/delete/", MailingDeleteView.as_view(), name="mailing_delete"),
     # Маршрут для ручного запуска отправки рассылки
     path("mailings/<int:pk>/send/", toggle_mailing_send, name="mailing_toggle_send"),
+    # Действия менеджера
+    path("manage/users/", UserListView.as_view(), name="user_list"),
+    path("manage/users/<int:pk>/toggle-active/", ToggleUserActiveView.as_view(), name="user_toggle_active"),
+    path("mailings/<int:pk>/disable/", DisableMailingView.as_view(), name="mailing_disable"),
 ]

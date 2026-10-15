@@ -1,4 +1,5 @@
 {% load static %}
+{% load role_tags %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -36,6 +37,13 @@
                     <li class="nav-item">
                         <a class="nav-link {% if 'mailing' in request.resolver_match.url_name %}active fw-bold text-white{% endif %}" href="{% url 'mailing:mailing_list' %}">Рассылки</a>
                     </li>
+                    {% if user|is_manager %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'user' in request.resolver_match.url_name %}active fw-bold text-white{% endif %}" href="{% url 'mailing:user_list' %}">
+                                👥 Пользователи
+                            </a>
+                        </li>
+                    {% endif %}
                     {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">

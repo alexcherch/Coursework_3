@@ -1,13 +1,30 @@
 {% extends 'mailing/base.html' %}
+{% load role_tags %}
 
 {% block content %}
 <div class="mb-4 d-flex justify-content-between align-items-center">
     <a href="{% url 'mailing:mailing_list' %}" class="text-decoration-none text-muted">← Назад к списку рассылок</a>
 
-    <!-- Кнопка ручного запуска отправки рассылки -->
-    <a href="{% url 'mailing:mailing_toggle_send' object.id %}" class="btn btn-success fw-bold shadow-sm">
-        🚀 Запустить рассылку сейчас
-    </a>
+    <!-- Кнопки действий -->
+    <div class="d-flex gap-2">
+        {# Владелец или менеджер может запускать рассылку #}
+        {% if object.owner == request.user or user|is_manager %}
+            <a href="{% url 'mailing:mailing_toggle_send' object.id %}" class="btn btn-success fw-bold shadow-sm">
+                🚀 Запустить рассылку сейчас
+            </a>
+        {% endif %}
+
+        {# Менеджер может отключить любую незавершённую рассылку #}
+        {% if user|is_manager and object.status != 'completed' %}
+            <form method="post" action="{% url 'mailing:mailing_disable' object.id %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-warning fw-bold shadow-sm"
+                        onclick="return confirm('Отключить рассылку #{{ object.id }}?');">
+                    🚫 Отключить рассылку
+                </button>
+            </form>
+        {% endif %}
+    </div>
 </div>
 
 <div class="row g-4">
@@ -54,10 +71,12 @@
                     </div>
                 </div>
             </div>
-            <div class="card-footer bg-white border-0 pb-4 ps-4 pe-4 d-flex justify-content-end">
-                <a href="{% url 'mailing:mailing_update' object.id %}" class="btn btn-outline-secondary me-2">Редактировать</a>
-                <a href="{% url 'mailing:mailing_delete' object.id %}" class="btn btn-danger">Удалить</a>
-            </div>
+            {% if object.owner == request.user %}
+                <div class="card-footer bg-white border-0 pb-4 ps-4 pe-4 d-flex justify-content-end">
+                    <a href="{% url 'mailing:mailing_update' object.id %}" class="btn btn-outline-secondary me-2">Редактировать</a>
+                    <a href="{% url 'mailing:mailing_delete' object.id %}" class="btn btn-danger">Удалить</a>
+                </div>
+            {% endif %}
         </div>
     </div>
 

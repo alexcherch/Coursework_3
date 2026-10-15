@@ -1,34 +1,54 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import ValidationError
-from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from mailing.forms import ClientForm, MailingForm, MessageForm
 from mailing.models import Client, Mailing, Message
 from mailing.services import send_mailing
+from users.mixins import ManagerRequiredMixin, OwnerOnlyMixin, OwnerOrManagerMixin, is_manager
+from users.models import User
 
 
 def index(request):
-    """Контроллер главной страницы со статистикой"""
-    # 1. Всего рассылок
-    total_mailings = Mailing.objects.count()
+    """Главная страница со статистикой.
 
-    # 2. Количество активных рассылок:
-    #    - статус 'started' (Запущена)
-    #    - текущее время между start_time и end_time
+    - Аноним — видит нули.
+    - Пользователь — только свои рассылки/клиентов.
+    - Менеджер — статистику по всем.
+    """
+    user = request.user
+
+    if not user.is_authenticated:
+        # Аноним — пустая статистика
+        base_mailings = Mailing.objects.none()
+        base_clients = Client.objects.none()
+    elif is_manager(user):
+        # Менеджер — видит всё
+        base_mailings = Mailing.objects.all()
+        base_clients = Client.objects.all()
+    else:
+        # Обычный пользователь — только своё
+        base_mailings = Mailing.objects.filter(owner=user)
+        base_clients = Client.objects.filter(owner=user)
+
+    # 1. Всего рассылок (по видимым)
+    total_mailings = base_mailings.count()
+
+    # 2. Активные рассылки: started + сейчас в окне
     now = timezone.now()
-    active_mailings = Mailing.objects.filter(
+    active_mailings = base_mailings.filter(
         status="started",
         start_time__lte=now,
         end_time__gte=now,
     ).count()
 
-    # 3. Количество уникальных получателей
-    # .distinct() гарантирует, что email-адреса не будут дублироваться в подсчете
-    unique_clients = Client.objects.values("email").distinct().count()
+    # 3. Уникальные получатели
+    unique_clients = base_clients.values("email").distinct().count()
 
     context = {
         "total_mailings": total_mailings,
@@ -43,15 +63,20 @@ def index(request):
 # --- КЛИЕНТЫ (CRUD) ---
 
 
-class ClientListView(ListView):
-    """Просмотр списка всех клиентов"""
+class ClientListView(LoginRequiredMixin, ListView):
+    """Список клиентов: пользователь видит только своих, менеджер — всех."""
 
     model = Client
-    # Шаблон по умолчанию Django ищет в: mailing/client_list.html
+
+    def get_queryset(self):
+        user = self.request.user
+        if is_manager(user):
+            return Client.objects.all()
+        return Client.objects.filter(owner=user)
 
 
-class ClientDetailView(DetailView):
-    """Просмотр детальной информации о клиенте"""
+class ClientDetailView(LoginRequiredMixin, OwnerOrManagerMixin, DetailView):
+    """Просмотр детальной информации о клиенте (владелец или менеджер)."""
 
     model = Client
 
@@ -69,16 +94,16 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class ClientUpdateView(UpdateView):
-    """Редактирование данных клиента"""
+class ClientUpdateView(LoginRequiredMixin, OwnerOnlyMixin, UpdateView):
+    """Редактирование данных клиента (только владелец)."""
 
     model = Client
     form_class = ClientForm
     success_url = reverse_lazy("mailing:client_list")
 
 
-class ClientDeleteView(DeleteView):
-    """Удаление клиента"""
+class ClientDeleteView(LoginRequiredMixin, OwnerOnlyMixin, DeleteView):
+    """Удаление клиента (только владелец)."""
 
     model = Client
     success_url = reverse_lazy("mailing:client_list")
@@ -87,14 +112,20 @@ class ClientDeleteView(DeleteView):
 # --- СООБЩЕНИЯ (CRUD) ---
 
 
-class MessageListView(ListView):
-    """Просмотр списка всех сообщений"""
+class MessageListView(LoginRequiredMixin, ListView):
+    """Список сообщений: пользователь видит только свои, менеджер — все."""
 
     model = Message
 
+    def get_queryset(self):
+        user = self.request.user
+        if is_manager(user):
+            return Message.objects.all()
+        return Message.objects.filter(owner=user)
 
-class MessageDetailView(DetailView):
-    """Просмотр детальной информации о сообщении"""
+
+class MessageDetailView(LoginRequiredMixin, OwnerOrManagerMixin, DetailView):
+    """Просмотр детальной информации о сообщении (владелец или менеджер)."""
 
     model = Message
 
@@ -111,16 +142,16 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class MessageUpdateView(UpdateView):
-    """Редактирование сообщения"""
+class MessageUpdateView(LoginRequiredMixin, OwnerOnlyMixin, UpdateView):
+    """Редактирование сообщения (только владелец)."""
 
     model = Message
     form_class = MessageForm
     success_url = reverse_lazy("mailing:message_list")
 
 
-class MessageDeleteView(DeleteView):
-    """Удаление сообщения"""
+class MessageDeleteView(LoginRequiredMixin, OwnerOnlyMixin, DeleteView):
+    """Удаление сообщения (только владелец)."""
 
     model = Message
     success_url = reverse_lazy("mailing:message_list")
@@ -129,13 +160,19 @@ class MessageDeleteView(DeleteView):
 # --- РАССЫЛКИ (CRUD) ---
 
 
-class MailingListView(ListView):
-    """Просмотр списка всех рассылок"""
+class MailingListView(LoginRequiredMixin, ListView):
+    """Список рассылок: пользователь видит только свои, менеджер — все."""
 
     model = Mailing
 
+    def get_queryset(self):
+        user = self.request.user
+        if is_manager(user):
+            return Mailing.objects.all()
+        return Mailing.objects.filter(owner=user)
 
-class MailingDetailView(DetailView):
+
+class MailingDetailView(LoginRequiredMixin, OwnerOrManagerMixin, DetailView):
     """Просмотр детальной информации о рассылке (с автообновлением статуса)."""
 
     model = Mailing
@@ -159,16 +196,16 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class MailingUpdateView(UpdateView):
-    """Редактирование рассылки"""
+class MailingUpdateView(LoginRequiredMixin, OwnerOnlyMixin, UpdateView):
+    """Редактирование рассылки (только владелец)."""
 
     model = Mailing
     form_class = MailingForm
     success_url = reverse_lazy("mailing:mailing_list")
 
 
-class MailingDeleteView(DeleteView):
-    """Удаление рассылки"""
+class MailingDeleteView(LoginRequiredMixin, OwnerOnlyMixin, DeleteView):
+    """Удаление рассылки (только владелец)."""
 
     model = Mailing
     success_url = reverse_lazy("mailing:mailing_list")
@@ -177,14 +214,74 @@ class MailingDeleteView(DeleteView):
 def toggle_mailing_send(request, pk):
     """Ручной запуск отправки рассылки из интерфейса.
 
+    Доступ: владелец или менеджер.
     Обрабатывает ValidationError от сервиса и показывает сообщение пользователю.
     """
+    # Аноним → на логин
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('users:login')}?next={request.path}")
+
+    mailing = get_object_or_404(Mailing, pk=pk)
+
+    # Проверка прав: владелец или менеджер
+    if mailing.owner != request.user and not is_manager(request.user):
+        raise PermissionDenied("У вас нет прав на отправку этой рассылки.")
+
     try:
         send_mailing(pk)
         messages.success(request, "Рассылка успешно запущена.")
     except ValidationError as exc:
-        # exc.message может быть как строкой, так и списком
         error_text = exc.messages[0] if exc.messages else str(exc)
         messages.error(request, error_text)
 
     return redirect("mailing:mailing_detail", pk=pk)
+
+
+# --- ДЕЙСТВИЯ МЕНЕДЖЕРА ---
+
+
+class UserListView(LoginRequiredMixin, ManagerRequiredMixin, ListView):
+    """Список всех пользователей сервиса (только менеджер)."""
+
+    model = User
+    template_name = "mailing/user_list.html"
+    context_object_name = "users"
+    ordering = ("-date_joined",)
+
+
+class ToggleUserActiveView(LoginRequiredMixin, ManagerRequiredMixin, View):
+    """Блокировка/разблокировка пользователя (только менеджер).
+
+    Менеджер не может блокировать суперюзера или самого себя.
+    """
+
+    def post(self, request, pk):
+        target_user = get_object_or_404(User, pk=pk)
+
+        # Защита: не блокировать суперюзера и самого себя
+        if target_user.is_superuser:
+            messages.error(request, "Нельзя блокировать суперпользователя.")
+            return redirect("mailing:user_list")
+
+        if target_user == request.user:
+            messages.error(request, "Нельзя заблокировать самого себя.")
+            return redirect("mailing:user_list")
+
+        target_user.is_active = not target_user.is_active
+        target_user.save(update_fields=["is_active"])
+
+        action = "разблокирован" if target_user.is_active else "заблокирован"
+        messages.success(request, f"Пользователь {target_user.email} {action}.")
+        return redirect("mailing:user_list")
+
+
+class DisableMailingView(LoginRequiredMixin, ManagerRequiredMixin, View):
+    """Отключение рассылки (только менеджер) — статус → completed."""
+
+    def post(self, request, pk):
+        mailing = get_object_or_404(Mailing, pk=pk)
+        mailing.status = "completed"
+        mailing.save(update_fields=["status"])
+
+        messages.success(request, f"Рассылка #{mailing.id} отключена.")
+        return redirect("mailing:mailing_detail", pk=mailing.pk)

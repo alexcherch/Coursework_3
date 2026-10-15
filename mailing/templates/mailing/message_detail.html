@@ -19,9 +19,11 @@
             <div class="bg-light p-4 rounded text-dark font-monospace" style="white-space: pre-line;">{{ object.body }}</div>
         </div>
     </div>
-    <div class="card-footer bg-white border-0 pb-4 ps-4 pe-4 d-flex justify-content-end">
-        <a href="{% url 'mailing:message_update' object.id %}" class="btn btn-outline-secondary me-2">Редактировать</a>
-        <a href="{% url 'mailing:message_delete' object.id %}" class="btn btn-danger">Удалить</a>
-    </div>
+    {% if object.owner == request.user %}
+        <div class="card-footer bg-white border-0 pb-4 ps-4 pe-4 d-flex justify-content-end">
+            <a href="{% url 'mailing:message_update' object.id %}" class="btn btn-outline-secondary me-2">Редактировать</a>
+            <a href="{% url 'mailing:message_delete' object.id %}" class="btn btn-danger">Удалить</a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

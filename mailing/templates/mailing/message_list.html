@@ -21,8 +21,10 @@
                         <hr class="text-muted my-3">
                         <div class="d-flex justify-content-end">
                             <a href="{% url 'mailing:message_detail' message.id %}" class="btn btn-sm btn-outline-info me-1">Просмотр</a>
-                            <a href="{% url 'mailing:message_update' message.id %}" class="btn btn-sm btn-outline-secondary me-1">Редактировать</a>
-                            <a href="{% url 'mailing:message_delete' message.id %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                            {% if message.owner == request.user %}
+                                <a href="{% url 'mailing:message_update' message.id %}" class="btn btn-sm btn-outline-secondary me-1">Редактировать</a>
+                                <a href="{% url 'mailing:message_delete' message.id %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

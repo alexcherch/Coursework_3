@@ -25,9 +25,11 @@
             </p>
         </div>
     </div>
-    <div class="card-footer bg-white border-0 pb-4 ps-4 pe-4 d-flex justify-content-end">
-        <a href="{% url 'mailing:client_update' object.id %}" class="btn btn-outline-secondary me-2">Редактировать</a>
-        <a href="{% url 'mailing:client_delete' object.id %}" class="btn btn-danger">Удалить</a>
-    </div>
+    {% if object.owner == request.user %}
+        <div class="card-footer bg-white border-0 pb-4 ps-4 pe-4 d-flex justify-content-end">
+            <a href="{% url 'mailing:client_update' object.id %}" class="btn btn-outline-secondary me-2">Редактировать</a>
+            <a href="{% url 'mailing:client_delete' object.id %}" class="btn btn-danger">Удалить</a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

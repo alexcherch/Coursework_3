@@ -29,10 +29,11 @@
                                 <td><a href="mailto:{{ client.email }}" class="text-decoration-none">{{ client.email }}</a></td>
                                 <td class="text-muted">{{ client.comment|default:"—"|truncatechars:30 }}</td>
                                 <td class="text-end pe-4">
-                                    <!-- Ссылки на просмотр, редактирование и удаление -->
                                     <a href="{% url 'mailing:client_detail' client.id %}" class="btn btn-sm btn-outline-info me-1">Смотреть</a>
-                                    <a href="{% url 'mailing:client_update' client.id %}" class="btn btn-sm btn-outline-secondary me-1">Редактировать</a>
-                                    <a href="{% url 'mailing:client_delete' client.id %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                                    {% if client.owner == request.user %}
+                                        <a href="{% url 'mailing:client_update' client.id %}" class="btn btn-sm btn-outline-secondary me-1">Редактировать</a>
+                                        <a href="{% url 'mailing:client_delete' client.id %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}
