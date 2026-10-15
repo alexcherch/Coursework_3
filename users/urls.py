@@ -15,7 +15,6 @@ urlpatterns = [
     path("email-sent/", EmailSentView.as_view(), name="email_sent"),
     path("login/", LoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
-
     # Восстановление пароля (встроенные views Django)
     path(
         "password-reset/",

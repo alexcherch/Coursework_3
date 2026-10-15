@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
@@ -55,12 +56,17 @@ class ClientDetailView(DetailView):
     model = Client
 
 
-class ClientCreateView(CreateView):
-    """Создание нового клиента"""
+class ClientCreateView(LoginRequiredMixin, CreateView):
+    """Создание нового клиента (только для авторизованных)"""
 
     model = Client
     form_class = ClientForm
     success_url = reverse_lazy("mailing:client_list")
+
+    def form_valid(self, form):
+        """Автоматически назначаем владельцем текущего пользователя."""
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
 
 
 class ClientUpdateView(UpdateView):
@@ -93,12 +99,16 @@ class MessageDetailView(DetailView):
     model = Message
 
 
-class MessageCreateView(CreateView):
-    """Создание нового сообщения"""
+class MessageCreateView(LoginRequiredMixin, CreateView):
+    """Создание нового сообщения (только для авторизованных)"""
 
     model = Message
     form_class = MessageForm
     success_url = reverse_lazy("mailing:message_list")
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
 
 
 class MessageUpdateView(UpdateView):
@@ -137,12 +147,16 @@ class MailingDetailView(DetailView):
         return obj
 
 
-class MailingCreateView(CreateView):
-    """Создание новой рассылки"""
+class MailingCreateView(LoginRequiredMixin, CreateView):
+    """Создание новой рассылки (только для авторизованных)"""
 
     model = Mailing
     form_class = MailingForm
     success_url = reverse_lazy("mailing:mailing_list")
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
 
 
 class MailingUpdateView(UpdateView):
