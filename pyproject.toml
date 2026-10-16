@@ -8,6 +8,7 @@ authors = [
 requires-python = "^3.14"
 dependencies = [
     "django (>=6.1.1,<7.0.0)",
+    "django-apscheduler (>=0.7.0,<1.0.0)",
     "itsdangerous (>=2.2.0,<3.0.0)",
     "python-dotenv (>=1.2.3,<2.0.0)",
     "pillow (>=12.3.0,<13.0.0)",
