@@ -1,9 +1,13 @@
+import logging
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.utils import timezone
 
 from mailing.models import Mailing, MailingAttempt
+
+logger = logging.getLogger("mailing")
 
 
 def send_mailing(mailing_id):
@@ -53,6 +57,7 @@ def send_mailing(mailing_id):
                 recipient_list=[recipient.email],
                 fail_silently=False,
             )
+            logger.info(f"Письмо отправлено: рассылка #{mailing_id} → {recipient.email}")
             attempts_to_create.append(
                 MailingAttempt(
                     status="success",
@@ -61,6 +66,7 @@ def send_mailing(mailing_id):
                 )
             )
         except Exception as exc:
+            logger.error(f"Ошибка отправки: рассылка #{mailing_id} → {recipient.email}: {exc}")
             attempts_to_create.append(
                 MailingAttempt(
                     status="fail",

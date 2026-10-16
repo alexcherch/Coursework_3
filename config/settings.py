@@ -58,6 +58,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "mailing.middleware.ClientCacheMiddleware",
+    "mailing.middleware.ErrorLoggingMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -178,3 +179,69 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@mailing-service.ru
 LOGIN_URL = "users:login"
 LOGIN_REDIRECT_URL = "mailing:index"
 LOGOUT_REDIRECT_URL = "mailing:index"
+
+
+# Логирование
+# https://docs.djangoproject.com/en/6.1/topics/logging/
+
+LOG_DIR = BASE_DIR / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{asctime}] {levelname} {name} — {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        # Консоль — для разработки
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+            "level": "INFO",
+        },
+        # Общий лог — всё от INFO и выше
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": LOG_DIR / "app.log",
+            "formatter": "verbose",
+            "level": "INFO",
+            "encoding": "utf-8",
+        },
+        # Ошибки — отдельный файл
+        "error_file": {
+            "class": "logging.FileHandler",
+            "filename": LOG_DIR / "errors.log",
+            "formatter": "verbose",
+            "level": "ERROR",
+            "encoding": "utf-8",
+        },
+    },
+    "loggers": {
+        # Логгер нашего приложения
+        "mailing": {
+            "handlers": ["console", "file", "error_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "users": {
+            "handlers": ["console", "file", "error_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        # Логгер Django — только ошибки
+        "django": {
+            "handlers": ["file", "error_file"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+    },
+}

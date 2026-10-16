@@ -1,5 +1,9 @@
 """Middleware для управления клиентским кешированием."""
 
+import logging
+
+logger = logging.getLogger("django")
+
 
 class ClientCacheMiddleware:
     """Добавляет HTTP-заголовки Cache-Control для клиентского (браузерного) кеша.
@@ -31,3 +35,26 @@ class ClientCacheMiddleware:
             response["Cache-Control"] = "no-store"
 
         return response
+
+
+class ErrorLoggingMiddleware:
+    """Логирует необработанные исключения (5xx) в errors.log.
+
+    Middleware вызывается Django, если view выбросил исключение.
+    Мы логируем его с уровнем ERROR и добавляем контекст (путь, метод, юзер).
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return self.get_response(request)
+
+    def process_exception(self, request, exception):
+        """Вызывается Django при необработанном исключении."""
+        user = request.user.email if request.user.is_authenticated else "anonymous"
+        logger.error(
+            f"Необработанное исключение на {request.method} {request.path} "
+            f"(user: {user}): {type(exception).__name__}: {exception}"
+        )
+        return None

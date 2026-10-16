@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
@@ -13,6 +15,8 @@ from mailing.models import Client, Mailing, MailingAttempt, Message
 from mailing.services import send_mailing
 from users.mixins import ManagerRequiredMixin, OwnerOnlyMixin, OwnerOrManagerMixin, is_manager
 from users.models import User
+
+logger = logging.getLogger("mailing")
 
 
 def index(request):
@@ -272,10 +276,12 @@ def toggle_mailing_send(request, pk):
 
     try:
         send_mailing(pk)
+        logger.info(f"Рассылка #{pk} запущена (пользователь: {request.user.email})")
         messages.success(request, "Рассылка успешно запущена.")
         invalidate_stats_cache(request.user, mailing.owner)
     except ValidationError as exc:
         error_text = exc.messages[0] if exc.messages else str(exc)
+        logger.warning(f"Отказ в отправке рассылки #{pk}: {error_text}")
         messages.error(request, error_text)
 
     return redirect("mailing:mailing_detail", pk=pk)
@@ -315,6 +321,7 @@ class ToggleUserActiveView(LoginRequiredMixin, ManagerRequiredMixin, View):
         target_user.save(update_fields=["is_active"])
 
         action = "разблокирован" if target_user.is_active else "заблокирован"
+        logger.info(f"Пользователь {target_user.email} {action} менеджером {request.user.email}")
         messages.success(request, f"Пользователь {target_user.email} {action}.")
         return redirect("mailing:user_list")
 
@@ -327,6 +334,7 @@ class DisableMailingView(LoginRequiredMixin, ManagerRequiredMixin, View):
         mailing.status = "completed"
         mailing.save(update_fields=["status"])
 
+        logger.info(f"Рассылка #{mailing.id} отключена менеджером {request.user.email}")
         messages.success(request, f"Рассылка #{mailing.id} отключена.")
         invalidate_stats_cache(request.user, mailing.owner)
         return redirect("mailing:mailing_detail", pk=mailing.pk)
