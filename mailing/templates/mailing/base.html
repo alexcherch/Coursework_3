@@ -45,6 +45,13 @@
                         </li>
                     {% endif %}
                     {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'statistic' in request.resolver_match.url_name %}active fw-bold text-white{% endif %}" href="{% url 'mailing:statistics' %}">
+                                📊 Статистика
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 👤 {{ user.email }}

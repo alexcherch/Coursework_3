@@ -5,10 +5,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views import View
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 
 from mailing.forms import ClientForm, MailingForm, MessageForm
-from mailing.models import Client, Mailing, Message
+from mailing.models import Client, Mailing, MailingAttempt, Message
 from mailing.services import send_mailing
 from users.mixins import ManagerRequiredMixin, OwnerOnlyMixin, OwnerOrManagerMixin, is_manager
 from users.models import User
@@ -285,3 +285,56 @@ class DisableMailingView(LoginRequiredMixin, ManagerRequiredMixin, View):
 
         messages.success(request, f"Рассылка #{mailing.id} отключена.")
         return redirect("mailing:mailing_detail", pk=mailing.pk)
+
+
+# --- СТАТИСТИКА ---
+
+
+class StatisticsView(LoginRequiredMixin, TemplateView):
+    """Страница статистики по попыткам рассылок.
+
+    - Пользователь: только по своим рассылкам.
+    - Менеджер: по всем рассылкам.
+    """
+
+    template_name = "mailing/statistics.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # База рассылок для статистики
+        if is_manager(user):
+            mailings = Mailing.objects.all().order_by("-id")
+        else:
+            mailings = Mailing.objects.filter(owner=user).order_by("-id")
+
+        # Собираем статистику по каждой рассылке
+        stats = []
+        total_success = 0
+        total_fail = 0
+
+        for mailing in mailings:
+            attempts = MailingAttempt.objects.filter(mailing=mailing)
+            success = attempts.filter(status="success").count()
+            fail = attempts.filter(status="fail").count()
+
+            total_success += success
+            total_fail += fail
+
+            stats.append(
+                {
+                    "mailing": mailing,
+                    "success": success,
+                    "fail": fail,
+                    "total": success + fail,
+                }
+            )
+
+        context["stats"] = stats
+        context["total_success"] = total_success
+        context["total_fail"] = total_fail
+        context["total_sent"] = total_success  # каждое успешное = отправленное письмо
+        context["is_manager_view"] = is_manager(user)
+
+        return context

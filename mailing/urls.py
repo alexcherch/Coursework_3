@@ -18,6 +18,7 @@ from mailing.views import (
     MessageDetailView,
     MessageListView,
     MessageUpdateView,
+    StatisticsView,
     ToggleUserActiveView,
     UserListView,
     index,
@@ -29,6 +30,8 @@ app_name = MailingConfig.name
 urlpatterns = [
     # Главная страница
     path("", index, name="index"),
+    # Статистика
+    path("statistics/", StatisticsView.as_view(), name="statistics"),
     # Маршруты для CRUD Клиентов
     path("clients/", ClientListView.as_view(), name="client_list"),
     path("clients/<int:pk>/", ClientDetailView.as_view(), name="client_detail"),
