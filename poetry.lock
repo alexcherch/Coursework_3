@@ -339,6 +339,21 @@ files = [
 ]
 
 [[package]]
+name = "pyjwt"
+version = "2.15.1"
+description = "JSON Web Token implementation in Python"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "pyjwt-2.15.1-py3-none-any.whl", hash = "sha256:42d59d631f7768a1028a64c7ff581a9bf7519804daf91fc5b6c56e30eec5e193"},
+    {file = "pyjwt-2.15.1.tar.gz", hash = "sha256:4f259e80cdfb6b3fc18a7de51fd1ef9ec79652f25019bae68975ca2468a34df8"},
+]
+
+[package.extras]
+crypto = ["cryptography (>=3.4.0)"]
+
+[[package]]
 name = "python-dotenv"
 version = "1.2.4"
 description = "Read key-value pairs from a .env file and set them as environment variables"
@@ -409,6 +424,25 @@ files = [
 dev = ["black", "build", "mypy", "pytest", "pytest-cov", "setuptools", "tox", "twine", "wheel"]
 
 [[package]]
+name = "redis"
+version = "5.3.1"
+description = "Python client for Redis database and key-value store"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "redis-5.3.1-py3-none-any.whl", hash = "sha256:dc1909bd24669cc31b5f67a039700b16ec30571096c5f1f0d9d2324bff31af97"},
+    {file = "redis-5.3.1.tar.gz", hash = "sha256:ca49577a531ea64039b5a36db3d6cd1a0c7a60c34124d46924a45b956e8cf14c"},
+]
+
+[package.dependencies]
+PyJWT = ">=2.9.0"
+
+[package.extras]
+hiredis = ["hiredis (>=3.0.0)"]
+ocsp = ["cryptography (>=36.0.1)", "pyopenssl (==23.2.1)", "requests (>=2.31.0)"]
+
+[[package]]
 name = "sqlparse"
 version = "0.6.0"
 description = "A non-validating SQL parser."
@@ -440,4 +474,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.14"
-content-hash = "9fb341f0d510f8b34b255db6d4ec1389d653df032d928b37754cc8144b45139e"
+content-hash = "0a1098e6eb3e814c8e06061782456038cdeb8ac5cdf8c9456948acfe9707137a"
