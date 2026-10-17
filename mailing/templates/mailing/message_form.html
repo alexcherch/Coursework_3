@@ -1,0 +1,43 @@
+{% extends 'mailing/base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'mailing:message_list' %}" class="text-decoration-none text-muted">← Отмена и назад к списку</a>
+</div>
+
+<div class="card border-0 shadow-sm mx-auto" style="max-width: 750px;">
+    <div class="card-header bg-white border-0 pt-4 ps-4">
+        <h3 class="card-title fw-bold text-dark mb-0">
+            {% if object %}Редактирование шаблона письма{% else %}Создание нового сообщения{% endif %}
+        </h3>
+    </div>
+    <div class="card-body ps-4 pe-4">
+        <hr class="text-muted my-2">
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label fw-semibold text-secondary">
+                        {{ field.label }}
+                    </label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ field.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="d-flex justify-content-end mt-4">
+                <a href="{% url 'mailing:message_list' %}" class="btn btn-outline-secondary me-2">Отмена</a>
+                <button type="submit" class="btn btn-success">
+                    {% if object %}Сохранить изменения{% else %}Создать сообщение{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

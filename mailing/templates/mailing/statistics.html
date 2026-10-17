@@ -1,0 +1,109 @@
+{% extends 'mailing/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">
+        {% if is_manager_view %}
+            📊 Статистика сервиса
+        {% else %}
+            📊 Моя статистика
+        {% endif %}
+    </h2>
+</div>
+
+<!-- СВОДНЫЕ КАРТОЧКИ -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 text-center">
+            <div class="card-body py-4">
+                <div class="display-4 fw-bold text-success mb-2">{{ total_success }}</div>
+                <h5 class="card-title text-muted mb-0">Успешных попыток</h5>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 text-center">
+            <div class="card-body py-4">
+                <div class="display-4 fw-bold text-danger mb-2">{{ total_fail }}</div>
+                <h5 class="card-title text-muted mb-0">Неуспешных попыток</h5>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 text-center bg-primary text-white">
+            <div class="card-body py-4">
+                <div class="display-4 fw-bold mb-2">{{ total_sent }}</div>
+                <h5 class="card-title opacity-75 mb-0">Отправлено сообщений</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ТАБЛИЦА ПО РАССЫЛКАМ -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-0 pt-4 ps-4">
+        <h4 class="fw-bold text-dark mb-0">Детализация по рассылкам</h4>
+    </div>
+    <div class="card-body p-0">
+        <hr class="text-muted mx-4 my-2">
+
+        {% if stats %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Тема сообщения</th>
+                            <th>Статус</th>
+                            <th class="text-center">Успешно</th>
+                            <th class="text-center">Неуспешно</th>
+                            <th class="text-center pe-4">Всего</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in stats %}
+                            <tr>
+                                <td class="ps-4 text-muted">#{{ item.mailing.id }}</td>
+                                <td>
+                                    <a href="{% url 'mailing:mailing_detail' item.mailing.id %}" class="fw-bold text-decoration-none">
+                                        {{ item.mailing.message.title }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {% if item.mailing.status == 'created' %}
+                                        <span class="badge bg-secondary">Создана</span>
+                                    {% elif item.mailing.status == 'started' %}
+                                        <span class="badge bg-success">Запущена</span>
+                                    {% elif item.mailing.status == 'completed' %}
+                                        <span class="badge bg-danger">Завершена</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-success">{{ item.success }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-danger">{{ item.fail }}</span>
+                                </td>
+                                <td class="text-center pe-4 fw-bold">{{ item.total }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-5 text-center text-muted">
+                <h5>Статистики пока нет</h5>
+                <p class="mb-0">
+                    {% if is_manager_view %}
+                        В сервисе ещё не было попыток отправки.
+                    {% else %}
+                        У вас ещё не было попыток отправки. Создайте рассылку и запустите её.
+                    {% endif %}
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'mailing/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">Управление пользователями</h2>
+    <span class="badge bg-secondary">{{ users|length }} пользователей</span>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        {% if users %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Email</th>
+                            <th>Имя</th>
+                            <th>Статус</th>
+                            <th>Роль</th>
+                            <th class="text-end pe-4">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                            <tr>
+                                <td class="ps-4 text-muted">{{ u.id }}</td>
+                                <td class="fw-bold">{{ u.email }}</td>
+                                <td>{{ u.username }}</td>
+                                <td>
+                                    {% if u.is_active %}
+                                        <span class="badge bg-success">Активен</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Заблокирован</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if u.is_superuser %}
+                                        <span class="badge bg-dark">Суперюзер</span>
+                                    {% elif u.groups.all %}
+                                        {% for g in u.groups.all %}
+                                            <span class="badge bg-info text-dark">{{ g.name }}</span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="badge bg-light text-muted">Пользователь</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    {% if not u.is_superuser and u != request.user %}
+                                        <form method="post" action="{% url 'mailing:user_toggle_active' u.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            {% if u.is_active %}
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                        onclick="return confirm('Заблокировать пользователя {{ u.email }}?');">
+                                                    🚫 Заблокировать
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                                    ✓ Разблокировать
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    {% else %}
+                                        <span class="text-muted small">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-5 text-center text-muted">
+                <h5>Пользователей пока нет</h5>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
