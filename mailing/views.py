@@ -221,11 +221,18 @@ class MailingDetailView(LoginRequiredMixin, OwnerOrManagerMixin, DetailView):
 
 
 class MailingCreateView(LoginRequiredMixin, CreateView):
-    """Создание новой рассылки (только для авторизованных)"""
+    """Создание новой рассылки (только для авторизованных)."""
 
     model = Mailing
     form_class = MailingForm
+    template_name = "mailing/mailing_form.html"
     success_url = reverse_lazy("mailing:mailing_list")
+
+    def get_form_kwargs(self):
+        """Передаём текущего пользователя в форму (для фильтрации)."""
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
@@ -239,7 +246,14 @@ class MailingUpdateView(LoginRequiredMixin, OwnerOnlyMixin, UpdateView):
 
     model = Mailing
     form_class = MailingForm
+    template_name = "mailing/mailing_form.html"
     success_url = reverse_lazy("mailing:mailing_list")
+
+    def get_form_kwargs(self):
+        """Передаём текущего пользователя в форму (для фильтрации)."""
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         response = super().form_valid(form)
